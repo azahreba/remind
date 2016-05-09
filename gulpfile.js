@@ -1,12 +1,3 @@
-/*
-Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
-This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
-The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
-The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
-Code distributed by Google as part of the polymer project is also
-subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
-*/
-
 'use strict';
 
 // Include promise polyfill for node 0.10 compatibility
@@ -25,6 +16,7 @@ var fs = require('fs');
 var glob = require('glob-all');
 var historyApiFallback = require('connect-history-api-fallback');
 var packageJson = require('./package.json');
+var polybuild = require('polybuild');
 var crypto = require('crypto');
 var ensureFiles = require('./tasks/ensure-files.js');
 
@@ -138,8 +130,10 @@ gulp.task('copy', function() {
   var bower = gulp.src([
     'app/bower_components/' +
 //    '{webcomponentsjs,platinum-sw,sw-toolbox,promise-polyfill}/' +
-    '**/*'
-  ]).pipe(gulp.dest(dist('bower_components')));
+    '**/*.html'
+  ])
+  .pipe(polybuild({maximumCrush: false, suffix: ''}))
+  .pipe(gulp.dest(dist('bower_components')));
 
   return merge(app, bower)
     .pipe($.size({
@@ -221,7 +215,8 @@ gulp.task('cache-config', function(callback) {
 
 // Clean output directory
 gulp.task('clean', function() {
-  return del(['.tmp', dist()]);
+console.log('!' + DIST + 'bower_components');
+  return del(['.tmp', dist() + '/**', '!' + dist(), '!' + dist() + '/bower_components', '!' + dist() + '/bower_components/**']);
 });
 
 // Watch files for changes & reload
